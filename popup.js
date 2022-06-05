@@ -100,8 +100,20 @@ function injectGain(targetGain) {
   );
   let gainNode = audioContext.createGain();
   gainNode.gain.value = targetGain;
+
+  var limiterNode = audioContext.createDynamicsCompressor();
+  // Creating a compressor but setting a high threshold and
+  // high ratio so it acts as a limiter. More explanation at
+  // https://developer.mozilla.org/en-US/docs/Web/API/DynamicsCompressorNode
+  limiterNode.threshold.setValueAtTime(-5.0, audioContext.currentTime); // In Decibels
+  limiterNode.knee.setValueAtTime(0, audioContext.currentTime); // In Decibels
+  limiterNode.ratio.setValueAtTime(40.0, audioContext.currentTime); // In Decibels
+  limiterNode.attack.setValueAtTime(0.001, audioContext.currentTime); // Time is seconds
+  limiterNode.release.setValueAtTime(0.1, audioContext.currentTime); // Time is seconds
+
   mediaElementSource.connect(gainNode);
-  gainNode.connect(audioContext.destination);
+  gainNode.connect(limiterNode);
+  limiterNode.connect(audioContext.destination);
 
   window.louderContext.gainNode = gainNode;
   window.louderContext.audioContext = audioContext;
